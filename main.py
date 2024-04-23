@@ -1,5 +1,6 @@
-import discord
-from discord.ext import commands
+from interactions import Client, Intents, listen
+from interactions import slash_command, SlashContext
+import asyncio
 from google.cloud import bigquery
 import datetime
 from dotenv import load_dotenv
@@ -8,14 +9,8 @@ import os
 # Load environment variables from .env file
 load_dotenv()
 
-# Declare intents for Discord bot
-intents = discord.Intents.all()
-
-# Enable the messages intent
-intents.messages = True
-
 # Initialize the Discord bot with intents
-bot = commands.Bot(command_prefix='!', intents=intents)
+bot = Client(intents=Intents.DEFAULT)
 
 def query_bigquery(project_id, dataset_id, table_id, query):
     # Initialize BigQuery client
@@ -35,12 +30,14 @@ def query_bigquery(project_id, dataset_id, table_id, query):
 
     return single_result
 
-# Discord command to query BigQuery and return the result
-@bot.command()
-async def quote(ctx):
-    # Print request to log
-    print("Quote requested... User: ", ctx.message.author.global_name, " Server: ", ctx.message.guild.name, "(", ctx.message.guild.id, ")", " Channel: ", ctx.message.channel.name, " (", ctx.message.channel.id, ")")
+@listen()  # this decorator tells snek that it needs to listen for the corresponding event, and run this coroutine
+async def on_ready():
+    # This event is called when the bot is ready to respond to commands
+    print("Ready")
+    print(f"This bot is owned by {bot.owner}")
 
+@slash_command(name="qb_quote", description="Retrieve a random quote")
+async def qb_quote(ctx: SlashContext):
     # Project ID, dataset ID, table ID, and query needed to retrieve quote in BigQuery table
     project = os.getenv("PROJECT_ID")
     dataset = os.getenv("DATASET_ID")
@@ -74,17 +71,29 @@ async def quote(ctx):
         else:
             formatted_result = f'{user_mention} \n```"{quote}"  \n\n  -{author}```\n'
 
-    # Delete the initial prompt message
-    await ctx.message.delete()
-
     # Send the result as a message in Discord
     await ctx.send(formatted_result)
     print("Response: ",formatted_result)
 
-# Send start-up message to log
-@bot.event
-async def on_ready():
-    print("Bot starting...")
+@slash_command(name="qb_add", description="Add a new quote")
+async def qb_add(ctx: SlashContext):
+    # need to defer it, otherwise, it fails
+    await ctx.defer()
+
+    # do stuff for a bit
+    await asyncio.sleep(3)
+
+    await ctx.send("Add quote functionality is not yet working...")
+
+@slash_command(name="qb_edit", description="Edit an existing quote")
+async def qb_edit(ctx: SlashContext):
+    # need to defer it, otherwise, it fails
+    await ctx.defer()
+
+    # do stuff for a bit
+    await asyncio.sleep(3)
+
+    await ctx.send("Edit quote functionality is not yet working...")
 
 # Run the bot with the Discord bot token in .env file
-bot.run(os.getenv("DISCORD_TOKEN"))
+bot.start(os.getenv("DISCORD_TOKEN"))
