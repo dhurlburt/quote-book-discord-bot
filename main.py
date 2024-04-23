@@ -38,8 +38,8 @@ def query_bigquery(project_id, dataset_id, table_id, query):
 # Discord command to query BigQuery and return the result
 @bot.command()
 async def quote(ctx):
-    # Delete the initial prompt message
-    await ctx.message.delete()
+    # Print request to log
+    print("Quote requested... User: ", ctx.message.author.global_name, " Server: ", ctx.message.guild.name, "(", ctx.message.guild.id, ")", " Channel: ", ctx.message.channel.name, " (", ctx.message.channel.id, ")")
 
     # Project ID, dataset ID, table ID, and query needed to retrieve quote in BigQuery table
     project = os.getenv("PROJECT_ID")
@@ -74,18 +74,17 @@ async def quote(ctx):
         else:
             formatted_result = f'{user_mention} \n```"{quote}"  \n\n  -{author}```\n'
 
+    # Delete the initial prompt message
+    await ctx.message.delete()
+
     # Send the result as a message in Discord
     await ctx.send(formatted_result)
+    print("Response: ",formatted_result)
 
-# Send start-up message
+# Send start-up message to log
 @bot.event
 async def on_ready():
-    print('quote-book-bot is open and ready...')
-
-# Send shutdown message
-@bot.event
-async def on_shutdown():
-    await bot.get_channel(os.getenv("YOUR_CHANNEL_ID")).send("quote-book-bot is shutting down...")
+    print("Bot starting...")
 
 # Run the bot with the Discord bot token in .env file
 bot.run(os.getenv("DISCORD_TOKEN"))
