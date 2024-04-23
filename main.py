@@ -77,5 +77,15 @@ async def quote(ctx):
     # Send the result as a message in Discord
     await ctx.send(formatted_result)
 
+# Send start-up message
+@bot.event
+async def on_ready():
+    print('quote-book-bot is open and ready...')
+
+# Send shutdown message
+@bot.event
+async def on_shutdown():
+    await bot.get_channel(os.getenv("YOUR_CHANNEL_ID")).send("quote-book-bot is shutting down...")
+
 # Run the bot with the Discord bot token in .env file
 bot.run(os.getenv("DISCORD_TOKEN"))
